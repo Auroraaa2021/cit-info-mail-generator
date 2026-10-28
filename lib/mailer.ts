@@ -4,8 +4,8 @@ import nodemailer from "nodemailer"
 function getMailer() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_SECURE === "true",
+    port: Number(process.env.SMTP_PORT || 465),
+    secure: (process.env.SMTP_SECURE ?? "true") === "true",
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASSWORD,
@@ -25,9 +25,9 @@ export async function sendEmail({
   const transporter = getMailer()
 
   return transporter.sendMail({
-    from: process.env.SMTP_FROM,
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     // Own address is the visible To; newsletter recipients are BCC so they don't see one another.
-    to: process.env.SMTP_EMAIL,
+    to: process.env.DEFAULT_TO_ADDRESS || process.env.SMTP_EMAIL || process.env.SMTP_USER,
     bcc: recipients,
     subject,
     html,

@@ -10,12 +10,23 @@ type TextFormat = sheets_v4.Schema$TextFormat
 
 function getGoogleSheetsClient() {
   const scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY
   const inlineJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
   const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS
 
   let authClient
 
-  if (inlineJson) {
+  if (clientEmail && privateKey) {
+    authClient = new googleAuth.GoogleAuth({
+      credentials: {
+        client_email: clientEmail,
+        // Env vars often store the key with literal "\n" sequences and optional wrapping quotes.
+        private_key: privateKey.replace(/^"|"$/g, "").replace(/\\n/g, "\n"),
+      },
+      scopes,
+    })
+  } else if (inlineJson) {
     authClient = new googleAuth.GoogleAuth({
       credentials: JSON.parse(inlineJson),
       scopes,
