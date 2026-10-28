@@ -44,7 +44,7 @@ Row 1 holds the headers. Every row after that is one entry.
 |--------|--------|----------|-------------|
 | A | Category | yes | Section the entry belongs to, e.g. `Events`, `Job Offers`, `Scholarships`. Rows without a category are skipped. |
 | B | Title | recommended | Headline of the entry. |
-| C | Date | optional | Event date in German format `DD.MM.YYYY` (e.g. `05.11.2026`). |
+| C | Date | optional | Event date in German format `DD.MM.YYYY` — day.month.year (e.g. `05.11.2026` = 5 November 2026). |
 | D | Deadline | optional | Deadline in German format `DD.MM.YYYY`. |
 | E | Further Information | optional | A URL. It appears as a **"Further Information"** link instead of the raw URL. |
 | F | Description | optional | Body text. Formatting, line breaks and links are kept, the same as the intro. |
