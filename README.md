@@ -20,6 +20,8 @@ A web app that turns a Google Sheet into a formatted CIT Info-Mail newsletter. Y
 
 The spreadsheet needs **three tabs**, named exactly `email`, `content` and `list` (all lowercase).
 
+> **Sample sheet:** [CIT Info-Mail sample Google Sheet](https://docs.google.com/spreadsheets/d/1RcafOBysmP5FtEY-MQXNDwShknmmq_DiGHq5X6LiAt4/edit?usp=sharing). Make a copy (**File → Make a copy**) and use it as a template.
+
 ### Spreadsheet title → email subject
 
 The **name of the spreadsheet** (the title at the top left in Google Sheets) becomes the email subject and the newsletter heading, e.g. `CIT Info-Mail November 2026`.
@@ -122,6 +124,8 @@ The **SMTP Login** section appears after the newsletter has loaded. Emails go ou
 The app checks your login against the mail server. If it succeeds, you stay logged in for 8 hours or until you click **Log out**.
 
 > The sender address must be one LRZ has assigned to your account. Any other address is rejected with `Sender address rejected: not owned by user`.
+
+For more on your CIT mail account (login, password, addresses), see the [CIT-Mail documentation](https://wiki.ito.cit.tum.de/bin/view/CIT/ITO/Docs/Services/E-Mail/CIT-Mail/?language=de).
 
 ### Step 3 — Send a test email
 
