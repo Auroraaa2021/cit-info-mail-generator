@@ -296,8 +296,18 @@ function compareEntries(a: Entry, b: Entry) {
   return a.order - b.order
 }
 
-export async function loadNewsletter(sheetUrl: string) {
+// Accepts an ISO date (YYYY-MM-DD) from the date picker; anything else disables the filter.
+function parseCutoffDate(value?: unknown): number | null {
+  if (typeof value !== "string") return null
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return null
+  const timestamp = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  return Number.isNaN(timestamp) ? null : timestamp
+}
+
+export async function loadNewsletter(sheetUrl: string, options: { cutoffDate?: unknown } = {}) {
   const spreadsheetId = spreadsheetIdFromUrl(sheetUrl)
+  const cutoff = parseCutoffDate(options.cutoffDate)
 
   const [emailResponse, contentResponse] = await Promise.all([
     readSheetRange(spreadsheetId, "email!A1"),
@@ -324,14 +334,16 @@ export async function loadNewsletter(sheetUrl: string) {
     if (!category) return
     if (!title && !dateText && !deadlineText && !furtherInfoText && !descriptionText) return
 
+    const dates = [parseGermanDate(dateCell), parseGermanDate(deadlineCell)]
+      .filter((value): value is number => value !== null)
+      .sort((a, b) => a - b)
+
+    if (cutoff !== null && dates.length > 0 && dates[0] > cutoff) return
+
     if (!grouped[category]) {
       grouped[category] = []
       categoryOrder.push(category)
     }
-
-    const dates = [parseGermanDate(dateCell), parseGermanDate(deadlineCell)]
-      .filter((value): value is number => value !== null)
-      .sort((a, b) => a - b)
 
     grouped[category].push({
       title,

@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Please log in with your SMTP account first." }, { status: 401 })
     }
 
-    const { sheetUrl, finalAddress } = await request.json()
+    const { sheetUrl, finalAddress, cutoffDate } = await request.json()
 
     if (!sheetUrl) {
       return Response.json({ error: "Google Sheet URL is required." }, { status: 400 })
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "A maximum of 20 Email addresses is allowed." }, { status: 400 })
     }
 
-    const newsletter = await loadNewsletter(sheetUrl)
+    const newsletter = await loadNewsletter(sheetUrl, { cutoffDate })
 
     await sendEmail({
       credentials,

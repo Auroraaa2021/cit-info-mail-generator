@@ -95,7 +95,8 @@ Paste Sheet URL → Load Newsletter → Preview → SMTP Login → Test Email �
 ### Step 1 — Load the newsletter
 
 1. Paste the Google Sheet URL (e.g. `https://docs.google.com/spreadsheets/d/.../edit`) into **Google Sheet URL**.
-2. Click **Load Newsletter**.
+2. Optional: tick **Ignore entries with a Date / Deadline after** and pick a date. Entries whose earliest Date or Deadline falls after that date are left out of the preview, the test email and the final send. Entries with both Date and Deadline blank are always kept.
+3. Click **Load Newsletter**.
 3. The app reads both tabs and builds the email. It then shows the title, the number of categories and entries, and a live **Preview**.
 4. Optional: click **Download HTML** to save the generated email as an `.html` file.
 

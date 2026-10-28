@@ -36,11 +36,13 @@ function handlePreviewLoad(event: SyntheticEvent<HTMLIFrameElement>) {
 export function NewsletterPanel({
   newsletter,
   sheetUrl,
+  cutoffDate,
   smtpUser,
   onSmtpUserChange,
 }: {
   newsletter: Newsletter
   sheetUrl: string
+  cutoffDate: string | null
   smtpUser: string | null
   onSmtpUserChange: (user: string | null) => void
 }) {
@@ -66,7 +68,7 @@ export function NewsletterPanel({
 
     setSending(true)
     try {
-      const { response, data } = await postJson("/api/send-test", { sheetUrl, testAddress: address })
+      const { response, data } = await postJson("/api/send-test", { sheetUrl, cutoffDate, testAddress: address })
       alert(response.ok ? "Test Email sent to " + address + "." : data.error)
     } catch (error) {
       alert((error as Error).message)
@@ -93,7 +95,7 @@ export function NewsletterPanel({
 
     setSending(true)
     try {
-      const { response, data } = await postJson("/api/send", { sheetUrl, finalAddress: address })
+      const { response, data } = await postJson("/api/send", { sheetUrl, cutoffDate, finalAddress: address })
       alert(response.ok ? "Newsletter sent to " + address + "." : data.error)
     } catch (error) {
       alert((error as Error).message)

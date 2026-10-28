@@ -27,8 +27,36 @@ input {
   margin-bottom: 14px;
 }
 
-button,
-.button {
+  .cutoff-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 14px;
+  }
+
+  .cutoff-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  }
+
+  .cutoff-filter input {
+  margin: 0;
+  }
+
+  .cutoff-filter input[type="checkbox"] {
+  width: auto;
+  }
+
+  .cutoff-filter input[type="date"] {
+  width: auto;
+  padding: 6px 8px;
+  }
+
+  button,
+  .button {
   display: inline-block;
   padding: 10px 18px;
   border: none;
