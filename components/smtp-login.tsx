@@ -64,7 +64,7 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
       <input
         id="smtpUser"
         autoComplete="username"
-        placeholder="CIT-Login OHNE @cit.tum.de, wie musterma"
+        placeholder="CIT login WITHOUT @cit.tum.de, e.g. musterma"
         value={username}
         onChange={(event) => setUsername(event.target.value)}
       />
@@ -84,7 +84,7 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
         id="smtpSender"
         type="email"
         autoComplete="email"
-        placeholder="Ihre TUM-E-Mail-Adresse, wie max.mustermann@tum.de"
+        placeholder="Your TUM email address, e.g. max.mustermann@tum.de"
         value={sender}
         onChange={(event) => setSender(event.target.value)}
       />
