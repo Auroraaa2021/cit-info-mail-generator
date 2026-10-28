@@ -1,6 +1,6 @@
 # CIT Info-Mail Generator
 
-A web app that turns a Google Sheet into a formatted CIT Info-Mail newsletter. You can preview it, download it as HTML, send a test, and then send it to everyone on the mailing list through your own CIT/LRZ mail account.
+A web app that turns a Google Sheet into a formatted CIT Info-Mail newsletter. You can preview it, download it as HTML, send a test, and then send it to a central mailing list address (which broadcasts it to everyone) through your own CIT/LRZ mail account.
 
 ---
 
@@ -18,7 +18,7 @@ A web app that turns a Google Sheet into a formatted CIT Info-Mail newsletter. Y
 
 ## 1. Preparing the Google Sheet
 
-The spreadsheet needs **three tabs**, named exactly `email`, `content` and `list` (all lowercase).
+The spreadsheet needs **two tabs**, named exactly `email` and `content` (all lowercase). Recipients are not stored in the sheet. You enter the central mailing list address during the final send.
 
 > **Sample sheet:** [CIT Info-Mail sample Google Sheet](https://docs.google.com/spreadsheets/d/1RcafOBysmP5FtEY-MQXNDwShknmmq_DiGHq5X6LiAt4/edit?usp=sharing). Make a copy (**File → Make a copy**) and use it as a template.
 
@@ -44,7 +44,7 @@ Row 1 holds the headers. Every row after that is one entry.
 |--------|--------|----------|-------------|
 | A | Category | yes | Section the entry belongs to, e.g. `Events`, `Job Offers`, `Scholarships`. Rows without a category are skipped. |
 | B | Title | recommended | Headline of the entry. |
-| C | Date | optional | Event date in German format `DD.MM.YYYY` (e.g. `05.11.2026`). |
+| C | Date | optional | Event date in German format `DD.MM.YYYY` — day.month.year (e.g. `05.11.2026` = 5 November 2026). |
 | D | Deadline | optional | Deadline in German format `DD.MM.YYYY`. |
 | E | Further Information | optional | A URL. It appears as a **"Further Information"** link instead of the raw URL. |
 | F | Description | optional | Body text. Formatting, line breaks and links are kept, the same as the intro. |
@@ -67,16 +67,6 @@ Example:
 - A cell may also hold a range like `05.11.2026 – 07.11.2026`. The first date is used for sorting, and the text is shown exactly as written.
 - Two-digit years (`05.11.26`) work, and so do real date-formatted cells.
 - Rows that are completely empty are ignored, so blank rows between entries are fine.
-
-### Tab `list` — recipients
-
-| Column | Content |
-|--------|---------|
-| A | One recipient email address per row, starting at `A1`. |
-
-- Empty rows are ignored.
-- Duplicate addresses are removed automatically.
-- Recipients are added as **BCC**, so nobody sees the other addresses.
 
 ---
 
@@ -106,7 +96,7 @@ Paste Sheet URL → Load Newsletter → Preview → SMTP Login → Test Email �
 
 1. Paste the Google Sheet URL (e.g. `https://docs.google.com/spreadsheets/d/.../edit`) into **Google Sheet URL**.
 2. Click **Load Newsletter**.
-3. The app reads all three tabs and builds the email. It then shows the title, the number of categories, entries and recipients, and a live **Preview**.
+3. The app reads both tabs and builds the email. It then shows the title, the number of categories and entries, and a live **Preview**.
 4. Optional: click **Download HTML** to save the generated email as an `.html` file.
 
 If you change the sheet, just click **Load Newsletter** again. Sending always uses the latest version of the sheet.
@@ -137,14 +127,13 @@ For more on your CIT mail account (login, password, addresses), see the [CIT-Mai
 
 ### Step 4 — Final send
 
-1. Click **Send Newsletter** in the **Final Send** section.
-2. Two confirmation dialogs appear:
-   - one warning that the mail goes to **all** addresses in the `list` tab
+1. In the **Final Send** section, enter the **central mailing list address**, e.g. `mailing-list@tum.de`. The mailing list then broadcasts the newsletter to all its members. You can also enter several addresses (up to 20) separated by `;`, e.g. `mailing-list@tum.de; addr1@tum.de; addr2@tum.de`.
+2. Click **Send Newsletter**.
+3. Two confirmation dialogs appear:
+   - one showing the address(es) the newsletter will be broadcast to
    - one asking whether you have already sent and checked a test email
-3. The newsletter is sent **once**:
-   - **To:** your own sender address (or a configured default address)
-   - **BCC:** every recipient from the `list` tab
-4. A status message reports how many recipients it was sent to.
+4. The newsletter is sent **once**, directly to the address(es) you entered, with the spreadsheet title as subject.
+5. A status message confirms where it was sent.
 
 ---
 
@@ -168,7 +157,7 @@ The HTML uses inline styles, so it displays correctly in Outlook, Thunderbird, A
 - **Google access is read-only.** The service account can only read sheets that were shared with it explicitly.
 - **SMTP credentials are never saved on the server.** After a successful login they are encrypted (AES-256-GCM) and kept in an HTTP-only, secure cookie in your browser. The cookie expires after 8 hours, and **Log out** deletes it right away.
 - Each user sends from their own account, so mails come from you and not from a shared address.
-- Recipients are always BCC'd.
+- No recipient list is stored in the app or the sheet. The newsletter only goes to the addresses you type in.
 
 ---
 
@@ -177,11 +166,10 @@ The HTML uses inline styles, so it displays correctly in Outlook, Thunderbird, A
 | Message | Cause / fix |
 |---------|-------------|
 | *Share this Google Sheet with cit-infomail-reader@… as Viewer* | The sheet is not shared with the service account. See [section 2](#2-sharing-the-sheet-with-the-app). |
-| *Unable to parse range* / tab not found | A tab is missing or misspelled. It must be exactly `email`, `content` and `list`. |
-| *Recipient list is empty.* | The `list` tab has no addresses in column A. |
+| *Unable to parse range* / tab not found | A tab is missing or misspelled. It must be exactly `email` and `content`. |
 | *SMTP login failed* | Wrong username or password. Use the CIT login **without** `@cit.tum.de`. |
 | *Sender address rejected: not owned by user* | Your **Sender Email** doesn't belong to your account. Use your official TUM/CIT address. |
-| *Invalid Email address* | One of the test addresses is malformed. Separate multiple addresses with `;`. |
+| *Invalid Email address* | One of the test or broadcast addresses is malformed. Separate multiple addresses with `;`. |
 | An entry is missing | Column A (Category) is empty for that row. |
 | Sorting looks wrong | Write dates as `DD.MM.YYYY`. Text such as `TBA` counts as no date and goes to the bottom. |
 
@@ -204,7 +192,7 @@ Built with Next.js (App Router), `@googleapis/sheets` and `nodemailer`.
 | `app/api/load` | `POST` → loads and renders the newsletter |
 | `app/api/login` | `POST` → checks the SMTP login and sets the session · `DELETE` → logs out |
 | `app/api/send-test` | `POST` → sends a test email to the given addresses |
-| `app/api/send` | `POST` → sends the newsletter to the full list |
+| `app/api/send` | `POST` → sends the newsletter to the central broadcast address |
 
 ### Environment variables
 
@@ -216,7 +204,6 @@ Built with Next.js (App Router), `@googleapis/sheets` and `nodemailer`.
 | `SMTP_PORT` | Optional, default `465` |
 | `SMTP_SECURE` | Optional, default `true` |
 | `SESSION_SECRET` | Random string used to encrypt the SMTP session cookie |
-| `DEFAULT_TO_ADDRESS` | Optional `To:` address for the final send (defaults to the sender) |
 
 You can use `GOOGLE_SERVICE_ACCOUNT_JSON` (the full JSON) or `GOOGLE_APPLICATION_CREDENTIALS` (a key file path) instead of the two Google variables.
 

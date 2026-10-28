@@ -8,7 +8,6 @@ export async function POST(request: Request) {
     return Response.json({
       title: newsletter.emailTitle,
       html: newsletter.html,
-      recipientCount: newsletter.recipientCount,
       categoryCount: newsletter.categoryCount,
       entryCount: newsletter.entryCount,
     })

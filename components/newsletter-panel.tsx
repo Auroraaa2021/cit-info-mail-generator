@@ -8,7 +8,6 @@ export type Newsletter = {
   html: string
   entryCount: number
   categoryCount: number
-  recipientCount: number
 }
 
 async function postJson(url: string, body: unknown) {
@@ -47,6 +46,7 @@ export function NewsletterPanel({
 }) {
   const loggedIn = Boolean(smtpUser)
   const [testAddress, setTestAddress] = useState("")
+  const [finalAddress, setFinalAddress] = useState("")
   const [sending, setSending] = useState(false)
 
   async function sendTest() {
@@ -76,13 +76,25 @@ export function NewsletterPanel({
   }
 
   async function sendNewsletter() {
-    if (!confirm("This will send the newsletter to ALL addresses in the list tab.\n\nContinue?")) return
+    const addresses = finalAddress
+      .split(";")
+      .map((address) => address.trim())
+      .filter(Boolean)
+
+    if (addresses.length === 0) {
+      alert("Enter at least one broadcast Email address.")
+      return
+    }
+
+    const address = addresses.join("; ")
+
+    if (!confirm("This will send the newsletter to:\n\n" + addresses.join("\n") + "\n\nIt will be broadcast to everyone on that list. Continue?")) return
     if (!confirm("Final confirmation:\n\nHave you already sent and checked a test email?")) return
 
     setSending(true)
     try {
-      const { response, data } = await postJson("/api/send", { sheetUrl })
-      alert(response.ok ? "Newsletter sent to " + data.recipientCount + " recipients." : data.error)
+      const { response, data } = await postJson("/api/send", { sheetUrl, finalAddress: address })
+      alert(response.ok ? "Newsletter sent to " + address + "." : data.error)
     } catch (error) {
       alert((error as Error).message)
     } finally {
@@ -100,9 +112,6 @@ export function NewsletterPanel({
         </span>
         <span>
           Categories: <strong>{newsletter.categoryCount}</strong>
-        </span>
-        <span>
-          Recipients: <strong>{newsletter.recipientCount}</strong>
         </span>
       </div>
 
@@ -130,7 +139,7 @@ export function NewsletterPanel({
             type="text"
             inputMode="email"
             autoComplete="off"
-            placeholder="your.name@tum.de; colleague@tum.de"
+            placeholder="addr1@tum.de; addr2@tum.de"
             value={testAddress}
             onChange={(event) => setTestAddress(event.target.value)}
           />
@@ -144,8 +153,22 @@ export function NewsletterPanel({
           <h3>Final Send</h3>
 
           <p>
-            This will send the current newsletter to every address in the <strong>list</strong> tab.
+            Enter the central mailing list address. The newsletter is sent there and broadcast to everyone on it.
+            Separate several addresses with semicolons.
           </p>
+
+          <label htmlFor="finalAddress" className="sr-only">
+            Broadcast Email addresses, separated by semicolons
+          </label>
+          <input
+            id="finalAddress"
+            type="text"
+            inputMode="email"
+            autoComplete="off"
+            placeholder="mailing-list@tum.de; addr1@tum.de; addr2@tum.de"
+            value={finalAddress}
+            onChange={(event) => setFinalAddress(event.target.value)}
+          />
 
           <button type="button" className="danger" onClick={sendNewsletter} disabled={sending}>
             Send Newsletter
