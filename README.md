@@ -127,7 +127,7 @@ For more on your CIT mail account (login, password, addresses), see the [CIT-Mai
 
 ### Step 4 — Final send
 
-1. In the **Final Send** section, enter the **central mailing list address**, e.g. `mailing-list@tum.de`. The mailing list then broadcasts the newsletter to all its members. Several addresses separated by `;` also work.
+1. In the **Final Send** section, enter the **central mailing list address**, e.g. `mailing-list@tum.de`. The mailing list then broadcasts the newsletter to all its members. You can also enter several addresses (up to 20) separated by `;`, e.g. `mailing-list@tum.de; addr1@tum.de; addr2@tum.de`.
 2. Click **Send Newsletter**.
 3. Two confirmation dialogs appear:
    - one showing the address(es) the newsletter will be broadcast to

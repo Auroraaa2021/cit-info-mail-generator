@@ -82,7 +82,7 @@ export function NewsletterPanel({
       .filter(Boolean)
 
     if (addresses.length === 0) {
-      alert("Enter the central broadcast Email address.")
+      alert("Enter at least one broadcast Email address.")
       return
     }
 
@@ -154,17 +154,18 @@ export function NewsletterPanel({
 
           <p>
             Enter the central mailing list address. The newsletter is sent there and broadcast to everyone on it.
+            Separate several addresses with semicolons.
           </p>
 
           <label htmlFor="finalAddress" className="sr-only">
-            Central broadcast Email address
+            Broadcast Email addresses, separated by semicolons
           </label>
           <input
             id="finalAddress"
             type="text"
             inputMode="email"
             autoComplete="off"
-            placeholder="mailing-list@tum.de"
+            placeholder="mailing-list@tum.de; addr1@tum.de; addr2@tum.de"
             value={finalAddress}
             onChange={(event) => setFinalAddress(event.target.value)}
           />
