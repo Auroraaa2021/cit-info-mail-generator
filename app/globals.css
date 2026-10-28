@@ -77,6 +77,17 @@ button:disabled {
   margin-right: 25px;
 }
 
+.site-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  padding: 12px 0 0;
+}
+
+.site-footer a {
+  color: #0065bd;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
