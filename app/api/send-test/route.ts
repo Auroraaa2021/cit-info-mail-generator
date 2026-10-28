@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       subject: "[TEST] " + newsletter.emailTitle,
       html: newsletter.html,
       recipients: [testAddress],
+      direct: true,
     })
 
     return Response.json({ success: true, message: `Test email sent to ${testAddress}.` })
