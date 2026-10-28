@@ -2,7 +2,7 @@ import "server-only"
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto"
 import { cookies } from "next/headers"
 
-export type SmtpCredentials = { user: string; pass: string }
+export type SmtpCredentials = { user: string; pass: string; from: string }
 
 const COOKIE_NAME = "smtp_session"
 const MAX_AGE_SECONDS = 60 * 60 * 8
@@ -27,7 +27,11 @@ function decrypt(token: string): SmtpCredentials | null {
     decipher.setAuthTag(raw.subarray(12, 28))
     const decrypted = Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString("utf8")
     const parsed = JSON.parse(decrypted)
-    return typeof parsed?.user === "string" && typeof parsed?.pass === "string" ? parsed : null
+    return typeof parsed?.user === "string" &&
+      typeof parsed?.pass === "string" &&
+      typeof parsed?.from === "string"
+      ? parsed
+      : null
   } catch {
     return null
   }

@@ -3,13 +3,17 @@ import { clearSmtpSession, setSmtpSession } from "@/lib/smtp-session"
 
 export async function POST(request: Request) {
   try {
-    const { user, pass } = await request.json()
+    const { user, pass, from } = await request.json()
 
     if (typeof user !== "string" || !user.trim() || typeof pass !== "string" || !pass) {
       return Response.json({ error: "SMTP username and password are required." }, { status: 400 })
     }
 
-    const credentials = { user: user.trim(), pass }
+    if (typeof from !== "string" || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(from.trim())) {
+      return Response.json({ error: "Please enter a valid sender email address." }, { status: 400 })
+    }
+
+    const credentials = { user: user.trim(), pass, from: from.trim() }
 
     try {
       await verifySmtpLogin(credentials)

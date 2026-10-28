@@ -5,13 +5,14 @@ import { useState, type FormEvent } from "react"
 export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (user: string | null) => void }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [sender, setSender] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!username.trim() || !password) {
-      setError("Bitte CIT-Login (ohne @cit.tum.de) und CIT-Passwort eingeben.")
+    if (!username.trim() || !password || !sender.trim()) {
+      setError("Bitte CIT-Login (ohne @cit.tum.de), CIT-Passwort und Absender-E-Mail eingeben.")
       return
     }
 
@@ -21,7 +22,7 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
       const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: username.trim(), pass: password }),
+        body: JSON.stringify({ user: username.trim(), pass: password, from: sender.trim() }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
@@ -76,6 +77,16 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
         placeholder="CIT-Passwort"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
+      />
+
+      <label htmlFor="smtpSender">Sender Email</label>
+      <input
+        id="smtpSender"
+        type="email"
+        autoComplete="email"
+        placeholder="Ihre TUM-E-Mail-Adresse, wie max.mustermann@tum.de"
+        value={sender}
+        onChange={(event) => setSender(event.target.value)}
       />
 
       <button type="submit" disabled={busy}>
