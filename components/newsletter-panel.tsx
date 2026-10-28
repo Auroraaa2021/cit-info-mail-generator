@@ -139,7 +139,7 @@ export function NewsletterPanel({
             type="text"
             inputMode="email"
             autoComplete="off"
-            placeholder="your.name@tum.de; colleague@tum.de"
+            placeholder="addr1@tum.de; addr2@tum.de"
             value={testAddress}
             onChange={(event) => setTestAddress(event.target.value)}
           />
