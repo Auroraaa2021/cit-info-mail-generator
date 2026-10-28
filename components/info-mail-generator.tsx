@@ -3,7 +3,8 @@
 import { useRef, useState } from "react"
 import { NewsletterPanel, type Newsletter } from "@/components/newsletter-panel"
 
-export function InfoMailGenerator() {
+export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string | null }) {
+  const [smtpUser, setSmtpUser] = useState(initialSmtpUser)
   const [sheetUrl, setSheetUrl] = useState("")
   const [status, setStatus] = useState("")
   const [newsletter, setNewsletter] = useState<Newsletter | null>(null)
@@ -90,7 +91,14 @@ export function InfoMailGenerator() {
         </div>
       </div>
 
-      {newsletter && <NewsletterPanel newsletter={newsletter} sheetUrl={loadedSheetUrl.current} />}
+      {newsletter && (
+        <NewsletterPanel
+          newsletter={newsletter}
+          sheetUrl={loadedSheetUrl.current}
+          smtpUser={smtpUser}
+          onSmtpUserChange={setSmtpUser}
+        />
+      )}
     </main>
   )
 }

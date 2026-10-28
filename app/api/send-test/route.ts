@@ -1,10 +1,16 @@
 import { loadNewsletter } from "@/lib/newsletter"
 import { sendEmail } from "@/lib/mailer"
+import { getSmtpCredentials } from "@/lib/smtp-session"
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(request: Request) {
   try {
+    const credentials = await getSmtpCredentials()
+    if (!credentials) {
+      return Response.json({ error: "Please log in with your SMTP account first." }, { status: 401 })
+    }
+
     const { sheetUrl, testAddress } = await request.json()
 
     if (!sheetUrl) {
@@ -18,6 +24,7 @@ export async function POST(request: Request) {
     const newsletter = await loadNewsletter(sheetUrl)
 
     await sendEmail({
+      credentials,
       subject: "[TEST] " + newsletter.emailTitle,
       html: newsletter.html,
       recipients: [testAddress],

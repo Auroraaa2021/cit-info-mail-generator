@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type SyntheticEvent } from "react"
+import { SmtpLogin } from "@/components/smtp-login"
 
 export type Newsletter = {
   title: string
@@ -33,7 +34,18 @@ function handlePreviewLoad(event: SyntheticEvent<HTMLIFrameElement>) {
   })
 }
 
-export function NewsletterPanel({ newsletter, sheetUrl }: { newsletter: Newsletter; sheetUrl: string }) {
+export function NewsletterPanel({
+  newsletter,
+  sheetUrl,
+  smtpUser,
+  onSmtpUserChange,
+}: {
+  newsletter: Newsletter
+  sheetUrl: string
+  smtpUser: string | null
+  onSmtpUserChange: (user: string | null) => void
+}) {
+  const loggedIn = Boolean(smtpUser)
   const [testAddress, setTestAddress] = useState("")
   const [sending, setSending] = useState(false)
 
@@ -95,7 +107,15 @@ export function NewsletterPanel({ newsletter, sheetUrl }: { newsletter: Newslett
 
       <hr />
 
+      <h3>SMTP Login</h3>
+
+      <SmtpLogin user={smtpUser} onChange={onSmtpUserChange} />
+
+      <hr />
+
       <h3>Test email</h3>
+
+      {!loggedIn && <p>Log in above to send emails.</p>}
 
       <label htmlFor="testAddress" className="sr-only">
         Test email address
@@ -108,7 +128,7 @@ export function NewsletterPanel({ newsletter, sheetUrl }: { newsletter: Newslett
         onChange={(event) => setTestAddress(event.target.value)}
       />
 
-      <button type="button" onClick={sendTest} disabled={sending}>
+      <button type="button" onClick={sendTest} disabled={sending || !loggedIn}>
         Send Test Email
       </button>
 
@@ -120,7 +140,7 @@ export function NewsletterPanel({ newsletter, sheetUrl }: { newsletter: Newslett
         This will send the current newsletter to every address in the <strong>list</strong> tab.
       </p>
 
-      <button type="button" className="danger" onClick={sendNewsletter} disabled={sending}>
+      <button type="button" className="danger" onClick={sendNewsletter} disabled={sending || !loggedIn}>
         Send Newsletter
       </button>
     </section>

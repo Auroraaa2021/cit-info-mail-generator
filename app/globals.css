@@ -63,6 +63,12 @@ button:disabled {
   font-weight: bold;
 }
 
+.error {
+  color: #b00020;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
 .stats {
   margin: 15px 0;
 }
