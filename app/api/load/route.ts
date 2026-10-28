@@ -2,8 +2,8 @@ import { loadNewsletter } from "@/lib/newsletter"
 
 export async function POST(request: Request) {
   try {
-    const { sheetUrl } = await request.json()
-    const newsletter = await loadNewsletter(sheetUrl)
+    const { sheetUrl, cutoffDate } = await request.json()
+    const newsletter = await loadNewsletter(sheetUrl, { cutoffDate })
 
     return Response.json({
       title: newsletter.emailTitle,

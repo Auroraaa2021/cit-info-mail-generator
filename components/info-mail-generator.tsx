@@ -8,7 +8,10 @@ export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string
   const [sheetUrl, setSheetUrl] = useState("")
   const [status, setStatus] = useState("")
   const [newsletter, setNewsletter] = useState<Newsletter | null>(null)
+  const [useCutoff, setUseCutoff] = useState(false)
+  const [cutoffInput, setCutoffInput] = useState("")
   const loadedSheetUrl = useRef("")
+  const loadedCutoff = useRef<string | null>(null)
 
   async function loadNewsletter() {
     const trimmed = sheetUrl.trim()
@@ -18,13 +21,20 @@ export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string
       return
     }
 
+    if (useCutoff && !cutoffInput) {
+      alert("Please choose a date, or uncheck the date filter.")
+      return
+    }
+
+    const cutoffDate = useCutoff ? cutoffInput : null
+
     setStatus("Loading Google Sheet...")
 
     try {
       const response = await fetch("/api/load", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sheetUrl: trimmed }),
+        body: JSON.stringify({ sheetUrl: trimmed, cutoffDate }),
       })
 
       const data = await response.json()
@@ -34,6 +44,7 @@ export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string
       }
 
       loadedSheetUrl.current = trimmed
+      loadedCutoff.current = cutoffDate
       setNewsletter(data)
       setStatus("\u2713 Newsletter loaded.")
     } catch (error) {
@@ -78,6 +89,24 @@ export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string
           }}
         />
 
+        <div className="cutoff-filter">
+          <label className="cutoff-toggle">
+            <input
+              type="checkbox"
+              checked={useCutoff}
+              onChange={(event) => setUseCutoff(event.target.checked)}
+            />
+            Ignore entries with a Date / Deadline after
+          </label>
+          <input
+            type="date"
+            aria-label="Ignore entries after this date"
+            value={cutoffInput}
+            disabled={!useCutoff}
+            onChange={(event) => setCutoffInput(event.target.value)}
+          />
+        </div>
+
         <button type="button" onClick={loadNewsletter}>
           Load Newsletter
         </button>
@@ -95,6 +124,7 @@ export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string
         <NewsletterPanel
           newsletter={newsletter}
           sheetUrl={loadedSheetUrl.current}
+          cutoffDate={loadedCutoff.current}
           smtpUser={smtpUser}
           onSmtpUserChange={setSmtpUser}
         />
