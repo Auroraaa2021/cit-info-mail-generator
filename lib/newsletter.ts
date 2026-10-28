@@ -299,10 +299,9 @@ function compareEntries(a: Entry, b: Entry) {
 export async function loadNewsletter(sheetUrl: string) {
   const spreadsheetId = spreadsheetIdFromUrl(sheetUrl)
 
-  const [emailResponse, contentResponse, listResponse] = await Promise.all([
+  const [emailResponse, contentResponse] = await Promise.all([
     readSheetRange(spreadsheetId, "email!A1"),
     readSheetRange(spreadsheetId, "content!A2:F"),
-    readSheetRange(spreadsheetId, "list!A1:A"),
   ])
 
   const emailTitle = emailResponse.properties?.title || "CIT Info-Mail"
@@ -349,20 +348,12 @@ export async function loadNewsletter(sheetUrl: string) {
 
   categoryOrder.forEach((category) => grouped[category].sort(compareEntries))
 
-  const recipients = extractRows(listResponse)
-    .map((row) => getCellText(row[0]).trim())
-    .filter(Boolean)
-
-  const uniqueRecipients = [...new Set(recipients)]
-
   const html = buildInfoMailHtml({ emailTitle, introHtml, grouped, categoryOrder })
 
   return {
     spreadsheetId,
     emailTitle,
     html,
-    recipients: uniqueRecipients,
-    recipientCount: uniqueRecipients.length,
     categoryCount: categoryOrder.length,
     entryCount: categoryOrder.reduce((sum, category) => sum + grouped[category].length, 0),
   }
