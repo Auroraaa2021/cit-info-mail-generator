@@ -11,7 +11,7 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!username.trim() || !password) {
-      setError("Enter your SMTP username and password.")
+      setError("Bitte CIT-Login (ohne @cit.tum.de) und CIT-Passwort eingeben.")
       return
     }
 
@@ -59,20 +59,21 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
 
   return (
     <form onSubmit={login}>
-      <label htmlFor="smtpUser">SMTP Username</label>
+      <label htmlFor="smtpUser">SMTP Username (CIT-Login OHNE @cit.tum.de, wie musterma)</label>
       <input
         id="smtpUser"
         autoComplete="username"
-        placeholder="your.name@tum.de"
+        placeholder="musterma"
         value={username}
         onChange={(event) => setUsername(event.target.value)}
       />
 
-      <label htmlFor="smtpPassword">SMTP Password</label>
+      <label htmlFor="smtpPassword">SMTP Password (CIT-Passwort)</label>
       <input
         id="smtpPassword"
         type="password"
         autoComplete="current-password"
+        placeholder="CIT-Passwort"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
       />
