@@ -99,6 +99,18 @@ export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string
           onSmtpUserChange={setSmtpUser}
         />
       )}
+
+      <footer className="site-footer">
+        {"Not sure how it works? Read the guide in the "}
+        <a
+          href="https://github.com/Auroraaa2021/cit-info-mail-generator#readme"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub repository README
+        </a>
+        .
+      </footer>
     </main>
   )
 }
