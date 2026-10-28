@@ -235,14 +235,59 @@ function extractRows(response: sheets_v4.Schema$Spreadsheet): Cell[][] {
 // LOAD NEWSLETTER FROM GOOGLE SHEET
 // =======================================================
 
-type Entry = { title: string; descriptionHtml: string; id: string }
+type Entry = {
+  title: string
+  dateText: string
+  deadlineText: string
+  furtherInfoHtml: string
+  descriptionHtml: string
+  id: string
+  order: number
+  sortKey: number
+  secondaryKey: number
+}
+
+const GOOGLE_SHEETS_EPOCH_MS = Date.UTC(1899, 11, 30)
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// Parses German dates (DD.MM.YYYY or DD.MM.YY). If a cell holds a range, the first date counts.
+function parseGermanDate(cell?: Cell): number | null {
+  const text = getCellText(cell).trim()
+
+  const match = text.match(/(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{2,4})/)
+  if (match) {
+    const day = Number(match[1])
+    const month = Number(match[2])
+    let year = Number(match[3])
+    if (year < 100) year += 2000
+
+    const timestamp = Date.UTC(year, month - 1, day)
+    const parsed = new Date(timestamp)
+    if (parsed.getUTCDate() === day && parsed.getUTCMonth() === month - 1) {
+      return timestamp
+    }
+  }
+
+  const serial = cell?.effectiveValue?.numberValue
+  if (typeof serial === "number" && serial > 0) {
+    return GOOGLE_SHEETS_EPOCH_MS + Math.floor(serial) * DAY_MS
+  }
+
+  return null
+}
+
+function compareEntries(a: Entry, b: Entry) {
+  if (a.sortKey !== b.sortKey) return a.sortKey - b.sortKey
+  if (a.secondaryKey !== b.secondaryKey) return a.secondaryKey - b.secondaryKey
+  return a.order - b.order
+}
 
 export async function loadNewsletter(sheetUrl: string) {
   const spreadsheetId = spreadsheetIdFromUrl(sheetUrl)
 
   const [emailResponse, contentResponse, listResponse] = await Promise.all([
     readSheetRange(spreadsheetId, "email!A1"),
-    readSheetRange(spreadsheetId, "content!A2:C"),
+    readSheetRange(spreadsheetId, "content!A2:F"),
     readSheetRange(spreadsheetId, "list!A1:A"),
   ])
 
@@ -254,25 +299,41 @@ export async function loadNewsletter(sheetUrl: string) {
   const categoryOrder: string[] = []
 
   extractRows(contentResponse).forEach((row, index) => {
-    const category = getCellText(row[0]).trim()
-    const title = getCellText(row[1]).trim()
-    const descriptionCell = row[2]
+    const [categoryCell, titleCell, dateCell, deadlineCell, furtherInfoCell, descriptionCell] = row
+
+    const category = getCellText(categoryCell).trim()
+    const title = getCellText(titleCell).trim()
+    const dateText = getCellText(dateCell).trim()
+    const deadlineText = getCellText(deadlineCell).trim()
+    const furtherInfoText = getCellText(furtherInfoCell).trim()
     const descriptionText = getCellText(descriptionCell).trim()
 
-    if (!category && !title && !descriptionText) return
     if (!category) return
+    if (!title && !dateText && !deadlineText && !furtherInfoText && !descriptionText) return
 
     if (!grouped[category]) {
       grouped[category] = []
       categoryOrder.push(category)
     }
 
+    const dates = [parseGermanDate(dateCell), parseGermanDate(deadlineCell)]
+      .filter((value): value is number => value !== null)
+      .sort((a, b) => a - b)
+
     grouped[category].push({
       title,
+      dateText,
+      deadlineText,
+      furtherInfoHtml: furtherInfoText ? richCellToHtml(furtherInfoCell) : "",
       descriptionHtml: richCellToHtml(descriptionCell),
       id: `entry-${index}`,
+      order: index,
+      sortKey: dates[0] ?? Number.POSITIVE_INFINITY,
+      secondaryKey: dates[1] ?? Number.POSITIVE_INFINITY,
     })
   })
+
+  categoryOrder.forEach((category) => grouped[category].sort(compareEntries))
 
   const recipients = extractRows(listResponse)
     .map((row) => getCellText(row[0]).trim())
@@ -296,6 +357,31 @@ export async function loadNewsletter(sheetUrl: string) {
 // =======================================================
 // BUILD EMAIL HTML
 // =======================================================
+
+function buildEntryMetaHtml(entry: Entry) {
+  const lines: string[] = []
+
+  if (entry.dateText) {
+    lines.push(`<div><strong>Date:</strong> ${escapeHtml(entry.dateText)}</div>`)
+  }
+  if (entry.deadlineText) {
+    lines.push(`<div><strong>Deadline:</strong> ${escapeHtml(entry.deadlineText)}</div>`)
+  }
+  if (entry.furtherInfoHtml) {
+    lines.push(`<div><strong>Further Information:</strong> ${entry.furtherInfoHtml}</div>`)
+  }
+
+  if (lines.length === 0) return ""
+
+  return `
+        <div style="
+          font-size:14px;
+          line-height:1.4;
+          margin-bottom:10px;
+        ">
+          ${lines.join("\n")}
+        </div>`
+}
 
 function buildInfoMailHtml({
   emailTitle,
@@ -429,6 +515,8 @@ function buildInfoMailHtml({
         ">
           ${escapeHtml(entry.title)}
         </div>
+
+        ${buildEntryMetaHtml(entry)}
 
         <div style="
           font-size:14px;
