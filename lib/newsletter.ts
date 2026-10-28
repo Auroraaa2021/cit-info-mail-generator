@@ -201,6 +201,20 @@ function richCellToHtml(cell?: Cell) {
   return html
 }
 
+function extractCellUrl(cell?: Cell) {
+  if (!cell) return ""
+  if (cell.hyperlink) return cell.hyperlink
+
+  const linkedRun = (cell.textFormatRuns || []).find((run) => run.format?.link?.uri)
+  if (linkedRun?.format?.link?.uri) return linkedRun.format.link.uri
+
+  const text = getCellText(cell).trim()
+  const urlMatch = text.match(/https?:\/\/[^\s<>"]+/i) || text.match(/www\.[^\s<>"]+/i)
+  if (!urlMatch) return ""
+
+  return urlMatch[0].startsWith("www.") ? `https://${urlMatch[0]}` : urlMatch[0]
+}
+
 // =======================================================
 // READ ONE RANGE INCLUDING FORMATTING
 // =======================================================
@@ -239,7 +253,7 @@ type Entry = {
   title: string
   dateText: string
   deadlineText: string
-  furtherInfoHtml: string
+  furtherInfoUrl: string
   descriptionHtml: string
   id: string
   order: number
@@ -324,7 +338,7 @@ export async function loadNewsletter(sheetUrl: string) {
       title,
       dateText,
       deadlineText,
-      furtherInfoHtml: furtherInfoText ? richCellToHtml(furtherInfoCell) : "",
+      furtherInfoUrl: furtherInfoText ? extractCellUrl(furtherInfoCell) : "",
       descriptionHtml: richCellToHtml(descriptionCell),
       id: `entry-${index}`,
       order: index,
@@ -367,10 +381,6 @@ function buildEntryMetaHtml(entry: Entry) {
   if (entry.deadlineText) {
     lines.push(`<div style="font-weight:bold;"><strong>Deadline: ${escapeHtml(entry.deadlineText)}</strong></div>`)
   }
-  if (entry.furtherInfoHtml) {
-    lines.push(`<div><strong>Further Information:</strong> ${entry.furtherInfoHtml}</div>`)
-  }
-
   if (lines.length === 0) return ""
 
   return `
@@ -380,6 +390,19 @@ function buildEntryMetaHtml(entry: Entry) {
           margin:0;
         ">
           ${lines.join("\n")}
+        </div>`
+}
+
+function buildFurtherInfoHtml(entry: Entry) {
+  if (!entry.furtherInfoUrl) return ""
+
+  return `
+        <div style="
+          font-size:14px;
+          line-height:1.15;
+          margin:0;
+        ">
+          <a href="${escapeHtmlAttribute(entry.furtherInfoUrl)}" target="_blank" style="color:#0563c1;">Further Information</a>
         </div>`
 }
 
@@ -524,6 +547,7 @@ function buildInfoMailHtml({
         ">
           ${entry.descriptionHtml}
         </div>
+${buildFurtherInfoHtml(entry)}
 
       </div>
       `
