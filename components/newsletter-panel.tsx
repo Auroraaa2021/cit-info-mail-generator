@@ -111,38 +111,40 @@ export function NewsletterPanel({
 
       <SmtpLogin user={smtpUser} onChange={onSmtpUserChange} />
 
-      <hr />
+      {loggedIn && (
+        <>
+          <hr />
 
-      <h3>Test email</h3>
+          <h3>Test email</h3>
 
-      {!loggedIn && <p>Log in above to send emails.</p>}
+          <label htmlFor="testAddress" className="sr-only">
+            Test email address
+          </label>
+          <input
+            id="testAddress"
+            type="email"
+            placeholder="your.name@tum.de"
+            value={testAddress}
+            onChange={(event) => setTestAddress(event.target.value)}
+          />
 
-      <label htmlFor="testAddress" className="sr-only">
-        Test email address
-      </label>
-      <input
-        id="testAddress"
-        type="email"
-        placeholder="your.name@tum.de"
-        value={testAddress}
-        onChange={(event) => setTestAddress(event.target.value)}
-      />
+          <button type="button" onClick={sendTest} disabled={sending}>
+            Send Test Email
+          </button>
 
-      <button type="button" onClick={sendTest} disabled={sending || !loggedIn}>
-        Send Test Email
-      </button>
+          <hr />
 
-      <hr />
+          <h3>Final Send</h3>
 
-      <h3>Final Send</h3>
+          <p>
+            This will send the current newsletter to every address in the <strong>list</strong> tab.
+          </p>
 
-      <p>
-        This will send the current newsletter to every address in the <strong>list</strong> tab.
-      </p>
-
-      <button type="button" className="danger" onClick={sendNewsletter} disabled={sending || !loggedIn}>
-        Send Newsletter
-      </button>
+          <button type="button" className="danger" onClick={sendNewsletter} disabled={sending}>
+            Send Newsletter
+          </button>
+        </>
+      )}
     </section>
   )
 }
