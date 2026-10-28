@@ -376,8 +376,8 @@ function buildEntryMetaHtml(entry: Entry) {
   return `
         <div style="
           font-size:14px;
-          line-height:1.4;
-          margin-bottom:10px;
+          line-height:1.15;
+          margin:0;
         ">
           ${lines.join("\n")}
         </div>`
