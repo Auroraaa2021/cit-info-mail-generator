@@ -50,19 +50,24 @@ export function NewsletterPanel({
   const [sending, setSending] = useState(false)
 
   async function sendTest() {
-    const address = testAddress.trim()
+    const addresses = testAddress
+      .split(";")
+      .map((address) => address.trim())
+      .filter(Boolean)
 
-    if (!address) {
-      alert("Enter a test email address.")
+    if (addresses.length === 0) {
+      alert("Enter at least one test Email address.")
       return
     }
 
-    if (!confirm("Send test email to " + address + "?")) return
+    const address = addresses.join("; ")
+
+    if (!confirm("Send Test Email to:\n\n" + addresses.join("\n") + "\n\nContinue?")) return
 
     setSending(true)
     try {
       const { response, data } = await postJson("/api/send-test", { sheetUrl, testAddress: address })
-      alert(response.ok ? "Test email sent." : data.error)
+      alert(response.ok ? "Test Email sent to " + address + "." : data.error)
     } catch (error) {
       alert((error as Error).message)
     } finally {
@@ -115,15 +120,17 @@ export function NewsletterPanel({
         <>
           <hr />
 
-          <h3>Test email</h3>
+          <h3>Test Email</h3>
 
           <label htmlFor="testAddress" className="sr-only">
-            Test email address
+            Test Email addresses, separated by semicolons
           </label>
           <input
             id="testAddress"
-            type="email"
-            placeholder="your.name@tum.de"
+            type="text"
+            inputMode="email"
+            autoComplete="off"
+            placeholder="your.name@tum.de; colleague@tum.de"
             value={testAddress}
             onChange={(event) => setTestAddress(event.target.value)}
           />

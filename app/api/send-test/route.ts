@@ -17,8 +17,22 @@ export async function POST(request: Request) {
       return Response.json({ error: "Google Sheet URL is required." }, { status: 400 })
     }
 
-    if (!testAddress || !EMAIL_PATTERN.test(testAddress)) {
-      return Response.json({ error: "A valid test email address is required." }, { status: 400 })
+    const recipients = String(testAddress ?? "")
+      .split(";")
+      .map((address) => address.trim())
+      .filter(Boolean)
+
+    if (recipients.length === 0) {
+      return Response.json({ error: "At least one test Email address is required." }, { status: 400 })
+    }
+
+    const invalid = recipients.filter((address) => !EMAIL_PATTERN.test(address))
+    if (invalid.length > 0) {
+      return Response.json({ error: "Invalid Email address: " + invalid.join("; ") }, { status: 400 })
+    }
+
+    if (recipients.length > 20) {
+      return Response.json({ error: "A maximum of 20 test Email addresses is allowed." }, { status: 400 })
     }
 
     const newsletter = await loadNewsletter(sheetUrl)
@@ -27,11 +41,11 @@ export async function POST(request: Request) {
       credentials,
       subject: "[TEST] " + newsletter.emailTitle,
       html: newsletter.html,
-      recipients: [testAddress],
+      recipients,
       direct: true,
     })
 
-    return Response.json({ success: true, message: `Test email sent to ${testAddress}.` })
+    return Response.json({ success: true, message: `Test Email sent to ${recipients.join("; ")}.` })
   } catch (error) {
     console.error(error)
     return Response.json({ error: (error as Error).message }, { status: 500 })
