@@ -362,10 +362,10 @@ function buildEntryMetaHtml(entry: Entry) {
   const lines: string[] = []
 
   if (entry.dateText) {
-    lines.push(`<div><strong>Date:</strong> ${escapeHtml(entry.dateText)}</div>`)
+    lines.push(`<div style="font-weight:bold;"><strong>Date: ${escapeHtml(entry.dateText)}</strong></div>`)
   }
   if (entry.deadlineText) {
-    lines.push(`<div><strong>Deadline:</strong> ${escapeHtml(entry.deadlineText)}</div>`)
+    lines.push(`<div style="font-weight:bold;"><strong>Deadline: ${escapeHtml(entry.deadlineText)}</strong></div>`)
   }
   if (entry.furtherInfoHtml) {
     lines.push(`<div><strong>Further Information:</strong> ${entry.furtherInfoHtml}</div>`)
