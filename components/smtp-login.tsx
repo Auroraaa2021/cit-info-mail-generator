@@ -59,16 +59,16 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
 
   return (
     <form onSubmit={login}>
-      <label htmlFor="smtpUser">SMTP Username (CIT-Login OHNE @cit.tum.de, wie musterma)</label>
+      <label htmlFor="smtpUser">SMTP Username</label>
       <input
         id="smtpUser"
         autoComplete="username"
-        placeholder="musterma"
+        placeholder="CIT-Login OHNE @cit.tum.de, wie musterma"
         value={username}
         onChange={(event) => setUsername(event.target.value)}
       />
 
-      <label htmlFor="smtpPassword">SMTP Password (CIT-Passwort)</label>
+      <label htmlFor="smtpPassword">SMTP Password</label>
       <input
         id="smtpPassword"
         type="password"
