@@ -59,7 +59,16 @@ Example:
 
 **How entries are grouped and sorted**
 
-- Categories appear in the order in which they **first show up** in the sheet.
+- Categories appear in this fixed order (matching ignores upper/lower case and extra spaces):
+  1. General information
+  2. Global
+  3. Funding opportunities
+  4. Global Funding opportunities
+  5. Prizes and Awards
+  6. Events, Talks, Visits
+  7. Information for Doctoral Candidates and Postdocs
+  8. Call for Applications: Professorships
+- Any other categories come after this list, sorted **alphabetically**.
 - Within each category, entries are sorted by date, **earliest first**:
   - The earlier of *Date* and *Deadline* decides the position.
   - If two entries tie, the other date decides.
