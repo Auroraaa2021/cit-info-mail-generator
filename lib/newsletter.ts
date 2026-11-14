@@ -305,6 +305,32 @@ function parseCutoffDate(value?: unknown): number | null {
   return Number.isNaN(timestamp) ? null : timestamp
 }
 
+const PREFERRED_CATEGORY_ORDER = [
+  "General information",
+  "Global",
+  "Funding opportunities",
+  "Global Funding opportunities",
+  "Prizes and Awards",
+  "Events, Talks, Visits",
+  "Information for Doctoral Candidates and Postdocs",
+  "Call for Applications: Professorships",
+]
+
+function normalizeCategory(category: string) {
+  return category.replace(/\s+/g, " ").trim().toLowerCase()
+}
+
+const PREFERRED_CATEGORY_RANK = new Map(
+  PREFERRED_CATEGORY_ORDER.map((category, index) => [normalizeCategory(category), index]),
+)
+
+function compareCategories(a: string, b: string) {
+  const rankA = PREFERRED_CATEGORY_RANK.get(normalizeCategory(a)) ?? Number.POSITIVE_INFINITY
+  const rankB = PREFERRED_CATEGORY_RANK.get(normalizeCategory(b)) ?? Number.POSITIVE_INFINITY
+  if (rankA !== rankB) return rankA - rankB
+  return a.localeCompare(b, "en", { sensitivity: "base" })
+}
+
 export async function loadNewsletter(sheetUrl: string, options: { cutoffDate?: unknown } = {}) {
   const spreadsheetId = spreadsheetIdFromUrl(sheetUrl)
   const cutoff = parseCutoffDate(options.cutoffDate)
@@ -358,6 +384,7 @@ export async function loadNewsletter(sheetUrl: string, options: { cutoffDate?: u
     })
   })
 
+  categoryOrder.sort(compareCategories)
   categoryOrder.forEach((category) => grouped[category].sort(compareEntries))
 
   const html = buildInfoMailHtml({ emailTitle, introHtml, grouped, categoryOrder })
