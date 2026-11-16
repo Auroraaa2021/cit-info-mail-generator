@@ -434,17 +434,17 @@ function buildEntryMetaHtml(entry: Entry) {
         </div>`
 }
 
-function buildEntryWeblinkHtml(entry: Entry) {
-  if (!entry.furtherInfoHtml) return ""
+function stripTrailingLineBreaks(html: string) {
+  return html.replace(/(?:<br>|\s)+((?:<\/[a-z]+>)*)\s*$/i, "$1")
+}
 
-  return `
-        <div style="
-          font-size:14px;
-          line-height:1.15;
-          margin-top:10px;
-        ">
-          Weblink: ${entry.furtherInfoHtml}
-        </div>`
+// Joined with <br><br> inside the description block so the gap matches a blank line between description paragraphs.
+function buildEntryBodyHtml(entry: Entry) {
+  const description = stripTrailingLineBreaks(entry.descriptionHtml)
+  if (!entry.furtherInfoHtml) return description
+
+  const weblink = `<strong>Weblink:</strong> ${entry.furtherInfoHtml}`
+  return description ? `${description}<br><br>${weblink}` : weblink
 }
 
 function buildInfoMailHtml({
@@ -586,10 +586,8 @@ function buildInfoMailHtml({
           font-size:14px;
           line-height:1.15;
         ">
-          ${entry.descriptionHtml}
+          ${buildEntryBodyHtml(entry)}
         </div>
-
-        ${buildEntryWeblinkHtml(entry)}
 
       </div>
       `
