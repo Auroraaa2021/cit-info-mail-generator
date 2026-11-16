@@ -305,40 +305,44 @@ function parseCutoffDate(value?: unknown): number | null {
   return Number.isNaN(timestamp) ? null : timestamp
 }
 
-const PREFERRED_CATEGORY_ORDER = [
-  "General information",
-  "Global",
-  "Funding opportunities",
-  "Global Funding opportunities",
-  "Prizes and Awards",
-  "Events, Talks, Visits",
-  "Information for Doctoral Candidates and Postdocs",
-  "Call for Applications: Professorships",
-]
-
 function normalizeCategory(category: string) {
   return category.replace(/\s+/g, " ").trim().toLowerCase()
 }
 
-const PREFERRED_CATEGORY_RANK = new Map(
-  PREFERRED_CATEGORY_ORDER.map((category, index) => [normalizeCategory(category), index]),
-)
+// Reads category names from column A of the "category" tab, in sheet order.
+async function loadCategoryOrder(spreadsheetId: string) {
+  const response = await readSheetRange(spreadsheetId, "category!A:A")
 
-function compareCategories(a: string, b: string) {
-  const rankA = PREFERRED_CATEGORY_RANK.get(normalizeCategory(a)) ?? Number.POSITIVE_INFINITY
-  const rankB = PREFERRED_CATEGORY_RANK.get(normalizeCategory(b)) ?? Number.POSITIVE_INFINITY
-  if (rankA !== rankB) return rankA - rankB
-  return a.localeCompare(b, "en", { sensitivity: "base" })
+  return extractRows(response)
+    .map((row) => getCellText(row[0]).trim())
+    .filter(Boolean)
+}
+
+function createCategoryComparator(categoryList: string[]) {
+  const rank = new Map<string, number>()
+  categoryList.forEach((category, index) => {
+    const key = normalizeCategory(category)
+    if (!rank.has(key)) rank.set(key, index)
+  })
+
+  return (a: string, b: string) => {
+    const rankA = rank.get(normalizeCategory(a)) ?? Number.POSITIVE_INFINITY
+    const rankB = rank.get(normalizeCategory(b)) ?? Number.POSITIVE_INFINITY
+    if (rankA !== rankB) return rankA - rankB
+    return a.localeCompare(b, "en", { sensitivity: "base" })
+  }
 }
 
 export async function loadNewsletter(sheetUrl: string, options: { cutoffDate?: unknown } = {}) {
   const spreadsheetId = spreadsheetIdFromUrl(sheetUrl)
   const cutoff = parseCutoffDate(options.cutoffDate)
 
-  const [emailResponse, contentResponse] = await Promise.all([
+  const [emailResponse, contentResponse, categoryList] = await Promise.all([
     readSheetRange(spreadsheetId, "email!A1"),
     readSheetRange(spreadsheetId, "content!A2:F"),
+    loadCategoryOrder(spreadsheetId),
   ])
+  const compareCategories = createCategoryComparator(categoryList)
 
   const emailTitle = emailResponse.properties?.title || "CIT Info-Mail"
 
