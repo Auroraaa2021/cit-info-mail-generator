@@ -201,20 +201,6 @@ function richCellToHtml(cell?: Cell) {
   return html
 }
 
-function extractCellUrl(cell?: Cell) {
-  if (!cell) return ""
-  if (cell.hyperlink) return cell.hyperlink
-
-  const linkedRun = (cell.textFormatRuns || []).find((run) => run.format?.link?.uri)
-  if (linkedRun?.format?.link?.uri) return linkedRun.format.link.uri
-
-  const text = getCellText(cell).trim()
-  const urlMatch = text.match(/https?:\/\/[^\s<>"]+/i) || text.match(/www\.[^\s<>"]+/i)
-  if (!urlMatch) return ""
-
-  return urlMatch[0].startsWith("www.") ? `https://${urlMatch[0]}` : urlMatch[0]
-}
-
 // =======================================================
 // READ ONE RANGE INCLUDING FORMATTING
 // =======================================================
@@ -253,7 +239,7 @@ type Entry = {
   title: string
   dateText: string
   deadlineText: string
-  furtherInfoUrl: string
+  furtherInfoHtml: string
   descriptionHtml: string
   id: string
   order: number
@@ -400,7 +386,7 @@ export async function loadNewsletter(sheetUrl: string, options: { cutoffDate?: u
       title,
       dateText,
       deadlineText,
-      furtherInfoUrl: furtherInfoText ? extractCellUrl(furtherInfoCell) : "",
+      furtherInfoHtml: furtherInfoText ? richCellToHtml(furtherInfoCell) : "",
       descriptionHtml: richCellToHtml(descriptionCell),
       id: `entry-${index}`,
       order: index,
@@ -448,11 +434,16 @@ function buildEntryMetaHtml(entry: Entry) {
         </div>`
 }
 
-function buildEntryTitleHtml(entry: Entry) {
-  const title = escapeHtml(entry.title)
-  if (!entry.furtherInfoUrl) return title
+function stripTrailingLineBreaks(html: string) {
+  return html.replace(/(?:<br>|\s)+((?:<\/[a-z]+>)*)\s*$/i, "$1")
+}
 
-  return `<a href="${escapeHtmlAttribute(entry.furtherInfoUrl)}" target="_blank" style="color:#00205b;text-decoration:underline;">${title}</a>`
+function buildEntryBodyHtml(entry: Entry) {
+  const description = stripTrailingLineBreaks(entry.descriptionHtml)
+  if (!entry.furtherInfoHtml) return description
+
+  const weblink = `<strong>Weblink:</strong> ${entry.furtherInfoHtml}`
+  return description ? `${description}<br>${weblink}` : weblink
 }
 
 function buildInfoMailHtml({
@@ -585,7 +576,7 @@ function buildInfoMailHtml({
           font-weight:bold;
           margin-bottom:10px;
         ">
-          ${buildEntryTitleHtml(entry)}
+          ${escapeHtml(entry.title)}
         </div>
 
         ${buildEntryMetaHtml(entry)}
@@ -594,7 +585,7 @@ function buildInfoMailHtml({
           font-size:14px;
           line-height:1.15;
         ">
-          ${entry.descriptionHtml}
+          ${buildEntryBodyHtml(entry)}
         </div>
 
       </div>

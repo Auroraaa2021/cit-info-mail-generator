@@ -46,7 +46,7 @@ Row 1 holds the headers. Every row after that is one entry.
 | B | Title | recommended | Headline of the entry. |
 | C | Date | optional | Event date in German format `DD.MM.YYYY` — day.month.year (e.g. `05.11.2026` = 5 November 2026). |
 | D | Deadline | optional | Deadline in German format `DD.MM.YYYY`. |
-| E | Further Information | optional | A URL. It appears as a **"Further Information"** link instead of the raw URL. |
+| E | Further Information | optional | A URL or text. It appears after the description as **"Weblink: ..."** with the cell content (URLs become clickable). |
 | F | Description | optional | Body text. Formatting, line breaks and links are kept, the same as the intro. |
 
 Example:
@@ -156,7 +156,7 @@ For more on your CIT mail account (login, password, addresses), see the [CIT-Mai
    - **Title**
    - **Date: …** and **Deadline: …** in bold, only when filled in, shown above the description with the same line spacing
    - Description
-   - **Further Information** link, only when column E is filled in
+   - **Weblink: …** with the content of column E, shown after the description, only when column E is filled in
 
 The HTML uses inline styles, so it displays correctly in Outlook, Thunderbird, Apple Mail and webmail clients.
 
