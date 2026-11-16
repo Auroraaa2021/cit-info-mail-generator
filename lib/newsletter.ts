@@ -438,13 +438,12 @@ function stripTrailingLineBreaks(html: string) {
   return html.replace(/(?:<br>|\s)+((?:<\/[a-z]+>)*)\s*$/i, "$1")
 }
 
-// Joined with <br><br> inside the description block so the gap matches a blank line between description paragraphs.
 function buildEntryBodyHtml(entry: Entry) {
   const description = stripTrailingLineBreaks(entry.descriptionHtml)
   if (!entry.furtherInfoHtml) return description
 
   const weblink = `<strong>Weblink:</strong> ${entry.furtherInfoHtml}`
-  return description ? `${description}<br><br>${weblink}` : weblink
+  return description ? `${description}<br>${weblink}` : weblink
 }
 
 function buildInfoMailHtml({
