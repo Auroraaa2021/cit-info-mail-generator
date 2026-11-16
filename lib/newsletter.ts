@@ -305,40 +305,65 @@ function parseCutoffDate(value?: unknown): number | null {
   return Number.isNaN(timestamp) ? null : timestamp
 }
 
-const PREFERRED_CATEGORY_ORDER = [
-  "General information",
-  "Global",
-  "Funding opportunities",
-  "Global Funding opportunities",
-  "Prizes and Awards",
-  "Events, Talks, Visits",
-  "Information for Doctoral Candidates and Postdocs",
-  "Call for Applications: Professorships",
-]
-
 function normalizeCategory(category: string) {
   return category.replace(/\s+/g, " ").trim().toLowerCase()
 }
 
-const PREFERRED_CATEGORY_RANK = new Map(
-  PREFERRED_CATEGORY_ORDER.map((category, index) => [normalizeCategory(category), index]),
-)
+const CATEGORY_TAB_NAMES = ["category", "categories", "kategorie", "kategorien"]
 
-function compareCategories(a: string, b: string) {
-  const rankA = PREFERRED_CATEGORY_RANK.get(normalizeCategory(a)) ?? Number.POSITIVE_INFINITY
-  const rankB = PREFERRED_CATEGORY_RANK.get(normalizeCategory(b)) ?? Number.POSITIVE_INFINITY
-  if (rankA !== rankB) return rankA - rankB
-  return a.localeCompare(b, "en", { sensitivity: "base" })
+// Finds the category tab case-insensitively so "Category" or "category " also match.
+async function findCategoryTabTitle(spreadsheetId: string) {
+  const sheets = getGoogleSheetsClient()
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets(properties(title))",
+  })
+
+  const titles = (response.data.sheets || [])
+    .map((sheet) => sheet.properties?.title)
+    .filter((title): title is string => Boolean(title))
+
+  return titles.find((title) => CATEGORY_TAB_NAMES.includes(title.trim().toLowerCase())) ?? null
+}
+
+// Reads category names from column A of the category tab, in sheet order.
+// Returns an empty list when the tab is missing, so categories fall back to alphabetical order.
+async function loadCategoryOrder(spreadsheetId: string) {
+  const tabTitle = await findCategoryTabTitle(spreadsheetId)
+  if (!tabTitle) return []
+
+  const response = await readSheetRange(spreadsheetId, `'${tabTitle.replace(/'/g, "''")}'!A:A`)
+
+  return extractRows(response)
+    .map((row) => getCellText(row[0]).trim())
+    .filter(Boolean)
+}
+
+function createCategoryComparator(categoryList: string[]) {
+  const rank = new Map<string, number>()
+  categoryList.forEach((category, index) => {
+    const key = normalizeCategory(category)
+    if (!rank.has(key)) rank.set(key, index)
+  })
+
+  return (a: string, b: string) => {
+    const rankA = rank.get(normalizeCategory(a)) ?? Number.POSITIVE_INFINITY
+    const rankB = rank.get(normalizeCategory(b)) ?? Number.POSITIVE_INFINITY
+    if (rankA !== rankB) return rankA - rankB
+    return a.localeCompare(b, "en", { sensitivity: "base" })
+  }
 }
 
 export async function loadNewsletter(sheetUrl: string, options: { cutoffDate?: unknown } = {}) {
   const spreadsheetId = spreadsheetIdFromUrl(sheetUrl)
   const cutoff = parseCutoffDate(options.cutoffDate)
 
-  const [emailResponse, contentResponse] = await Promise.all([
+  const [emailResponse, contentResponse, categoryList] = await Promise.all([
     readSheetRange(spreadsheetId, "email!A1"),
     readSheetRange(spreadsheetId, "content!A2:F"),
+    loadCategoryOrder(spreadsheetId),
   ])
+  const compareCategories = createCategoryComparator(categoryList)
 
   const emailTitle = emailResponse.properties?.title || "CIT Info-Mail"
 
@@ -423,17 +448,11 @@ function buildEntryMetaHtml(entry: Entry) {
         </div>`
 }
 
-function buildFurtherInfoHtml(entry: Entry) {
-  if (!entry.furtherInfoUrl) return ""
+function buildEntryTitleHtml(entry: Entry) {
+  const title = escapeHtml(entry.title)
+  if (!entry.furtherInfoUrl) return title
 
-  return `
-        <div style="
-          font-size:14px;
-          line-height:1.15;
-          margin:0;
-        ">
-          <a href="${escapeHtmlAttribute(entry.furtherInfoUrl)}" target="_blank" style="color:#0563c1;">Further Information</a>
-        </div>`
+  return `<a href="${escapeHtmlAttribute(entry.furtherInfoUrl)}" target="_blank" style="color:#00205b;text-decoration:underline;">${title}</a>`
 }
 
 function buildInfoMailHtml({
@@ -566,7 +585,7 @@ function buildInfoMailHtml({
           font-weight:bold;
           margin-bottom:10px;
         ">
-          ${escapeHtml(entry.title)}
+          ${buildEntryTitleHtml(entry)}
         </div>
 
         ${buildEntryMetaHtml(entry)}
@@ -577,7 +596,6 @@ function buildInfoMailHtml({
         ">
           ${entry.descriptionHtml}
         </div>
-${buildFurtherInfoHtml(entry)}
 
       </div>
       `
