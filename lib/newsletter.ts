@@ -448,17 +448,11 @@ function buildEntryMetaHtml(entry: Entry) {
         </div>`
 }
 
-function buildFurtherInfoHtml(entry: Entry) {
-  if (!entry.furtherInfoUrl) return ""
+function buildEntryTitleHtml(entry: Entry) {
+  const title = escapeHtml(entry.title)
+  if (!entry.furtherInfoUrl) return title
 
-  return `
-        <div style="
-          font-size:14px;
-          line-height:1.15;
-          margin:0;
-        ">
-          <a href="${escapeHtmlAttribute(entry.furtherInfoUrl)}" target="_blank" style="color:#0563c1;">Further Information</a>
-        </div>`
+  return `<a href="${escapeHtmlAttribute(entry.furtherInfoUrl)}" target="_blank" style="color:#00205b;text-decoration:underline;">${title}</a>`
 }
 
 function buildInfoMailHtml({
@@ -591,7 +585,7 @@ function buildInfoMailHtml({
           font-weight:bold;
           margin-bottom:10px;
         ">
-          ${escapeHtml(entry.title)}
+          ${buildEntryTitleHtml(entry)}
         </div>
 
         ${buildEntryMetaHtml(entry)}
@@ -602,7 +596,6 @@ function buildInfoMailHtml({
         ">
           ${entry.descriptionHtml}
         </div>
-${buildFurtherInfoHtml(entry)}
 
       </div>
       `
