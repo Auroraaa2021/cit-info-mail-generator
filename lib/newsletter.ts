@@ -309,9 +309,30 @@ function normalizeCategory(category: string) {
   return category.replace(/\s+/g, " ").trim().toLowerCase()
 }
 
-// Reads category names from column A of the "category" tab, in sheet order.
+const CATEGORY_TAB_NAMES = ["category", "categories", "kategorie", "kategorien"]
+
+// Finds the category tab case-insensitively so "Category" or "category " also match.
+async function findCategoryTabTitle(spreadsheetId: string) {
+  const sheets = getGoogleSheetsClient()
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets(properties(title))",
+  })
+
+  const titles = (response.data.sheets || [])
+    .map((sheet) => sheet.properties?.title)
+    .filter((title): title is string => Boolean(title))
+
+  return titles.find((title) => CATEGORY_TAB_NAMES.includes(title.trim().toLowerCase())) ?? null
+}
+
+// Reads category names from column A of the category tab, in sheet order.
+// Returns an empty list when the tab is missing, so categories fall back to alphabetical order.
 async function loadCategoryOrder(spreadsheetId: string) {
-  const response = await readSheetRange(spreadsheetId, "category!A:A")
+  const tabTitle = await findCategoryTabTitle(spreadsheetId)
+  if (!tabTitle) return []
+
+  const response = await readSheetRange(spreadsheetId, `'${tabTitle.replace(/'/g, "''")}'!A:A`)
 
   return extractRows(response)
     .map((row) => getCellText(row[0]).trim())
