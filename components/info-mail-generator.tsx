@@ -96,11 +96,11 @@ export function InfoMailGenerator({ initialSmtpUser }: { initialSmtpUser: string
               checked={useCutoff}
               onChange={(event) => setUseCutoff(event.target.checked)}
             />
-            Ignore entries with a Date / Deadline after
+            Ignore entries with a Date / Deadline before
           </label>
           <input
             type="date"
-            aria-label="Ignore entries after this date"
+            aria-label="Ignore entries before this date"
             value={cutoffInput}
             disabled={!useCutoff}
             onChange={(event) => setCutoffInput(event.target.value)}

@@ -104,7 +104,7 @@ Paste Sheet URL → Load Newsletter → Preview → SMTP Login → Test Email �
 ### Step 1 — Load the newsletter
 
 1. Paste the Google Sheet URL (e.g. `https://docs.google.com/spreadsheets/d/.../edit`) into **Google Sheet URL**.
-2. Optional: tick **Ignore entries with a Date / Deadline after** and pick a date. Entries whose earliest Date or Deadline falls after that date are left out of the preview, the test email and the final send. Entries with both Date and Deadline blank are always kept.
+2. Optional: tick **Ignore entries with a Date / Deadline before** and pick a date. Entries whose Date and Deadline both fall before that date (i.e. their latest date is earlier than the chosen day) are left out of the preview, the test email and the final send. Entries with both Date and Deadline blank are always kept.
 3. Click **Load Newsletter**.
 3. The app reads both tabs and builds the email. It then shows the title, the number of categories and entries, and a live **Preview**.
 4. Optional: click **Download HTML** to save the generated email as an `.html` file.
@@ -117,9 +117,9 @@ The **SMTP Login** section appears after the newsletter has loaded. Emails go ou
 
 | Field | What to enter |
 |-------|---------------|
-| SMTP Username | Your CIT login **without** `@cit.tum.de`, e.g. `musterma` |
-| SMTP Password | Your CIT password |
-| Sender Email | An email address that belongs to your account, e.g. `max.mustermann@tum.de` |
+| Email | An email address that belongs to your account, e.g. `max.mustermann@tum.de`. Used as the sender. |
+| Password | Your mail password (for CIT: your CIT password) |
+| SMTP Username (optional) | Only needed if your server doesn't accept the email address as login. For the CIT server, enter your CIT login **without** `@cit.tum.de`, e.g. `musterma`. Leave empty to log in with the email address. |
 
 The app checks your login against the mail server. If it succeeds, you stay logged in for 8 hours or until you click **Log out**.
 
@@ -177,8 +177,8 @@ The HTML uses inline styles, so it displays correctly in Outlook, Thunderbird, A
 |---------|-------------|
 | *Share this Google Sheet with cit-infomail-reader@… as Viewer* | The sheet is not shared with the service account. See [section 2](#2-sharing-the-sheet-with-the-app). |
 | *Unable to parse range* / tab not found | A tab is missing or misspelled. It must be exactly `email` and `content`. |
-| *SMTP login failed* | Wrong username or password. Use the CIT login **without** `@cit.tum.de`. |
-| *Sender address rejected: not owned by user* | Your **Sender Email** doesn't belong to your account. Use your official TUM/CIT address. |
+| *SMTP login failed* | Wrong password, or your server doesn't accept the email address as login. Fill in **SMTP Username**, e.g. the CIT login **without** `@cit.tum.de`. |
+| *Sender address rejected: not owned by user* | Your **Email** doesn't belong to your account. Use your official TUM/CIT address. |
 | *Invalid Email address* | One of the test or broadcast addresses is malformed. Separate multiple addresses with `;`. |
 | An entry is missing | Column A (Category) is empty for that row. |
 | Sorting looks wrong | Write dates as `DD.MM.YYYY`. Text such as `TBA` counts as no date and goes to the bottom. |

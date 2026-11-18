@@ -11,8 +11,8 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!username.trim() || !password || !sender.trim()) {
-      setError("Bitte CIT-Login (ohne @cit.tum.de), CIT-Passwort und Absender-E-Mail eingeben.")
+    if (!sender.trim() || !password) {
+      setError("Bitte E-Mail-Adresse und Passwort eingeben.")
       return
     }
 
@@ -60,34 +60,38 @@ export function SmtpLogin({ user, onChange }: { user: string | null; onChange: (
 
   return (
     <form onSubmit={login}>
-      <label htmlFor="smtpUser">SMTP Username</label>
-      <input
-        id="smtpUser"
-        autoComplete="username"
-        placeholder="CIT login WITHOUT @cit.tum.de, e.g. musterma"
-        value={username}
-        onChange={(event) => setUsername(event.target.value)}
-      />
-
-      <label htmlFor="smtpPassword">SMTP Password</label>
-      <input
-        id="smtpPassword"
-        type="password"
-        autoComplete="current-password"
-        placeholder="CIT-Passwort"
-        value={password}
-        onChange={(event) => setPassword(event.target.value)}
-      />
-
-      <label htmlFor="smtpSender">Sender Email</label>
+      <label htmlFor="smtpSender">Email</label>
       <input
         id="smtpSender"
         type="email"
         autoComplete="email"
-        placeholder="Your TUM email address, e.g. max.mustermann@tum.de"
+        placeholder="Your email address, e.g. max.mustermann@tum.de"
         value={sender}
         onChange={(event) => setSender(event.target.value)}
       />
+
+      <label htmlFor="smtpPassword">Password</label>
+      <input
+        id="smtpPassword"
+        type="password"
+        autoComplete="current-password"
+        placeholder="Your mail password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+      />
+
+      <label htmlFor="smtpUser">SMTP Username (optional)</label>
+      <input
+        id="smtpUser"
+        autoComplete="username"
+        placeholder="Only if different from your email, e.g. CIT login musterma"
+        aria-describedby="smtpUserHint"
+        value={username}
+        onChange={(event) => setUsername(event.target.value)}
+      />
+      <p id="smtpUserHint">
+        Leave empty to log in with your email address. For the CIT server, enter your CIT login without @cit.tum.de.
+      </p>
 
       <button type="submit" disabled={busy}>
         {busy ? "Logging in..." : "Log In"}
