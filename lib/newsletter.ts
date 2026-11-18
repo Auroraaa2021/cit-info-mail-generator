@@ -500,10 +500,8 @@ function buildInfoMailHtml({
 `
 
   html += `
-  <div
-    id="content-overview"
-    style="margin-bottom:30px;"
-  >
+  <div style="margin-bottom:30px;">
+    <a name="content-overview" id="content-overview"></a>
 
     <div style="
       font-weight:bold;
@@ -563,12 +561,11 @@ function buildInfoMailHtml({
 
     grouped[category].forEach((entry) => {
       html += `
-      <div
-        id="${entry.id}"
-        style="
+      <div style="
           margin:0 16px 30px 16px;
         "
       >
+        <a name="${entry.id}" id="${entry.id}"></a>
 
         <div style="
           color:#00205b;
