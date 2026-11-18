@@ -375,7 +375,7 @@ export async function loadNewsletter(sheetUrl: string, options: { cutoffDate?: u
       .filter((value): value is number => value !== null)
       .sort((a, b) => a - b)
 
-    if (cutoff !== null && dates.length > 0 && dates[0] > cutoff) return
+    if (cutoff !== null && dates.length > 0 && dates[dates.length - 1] < cutoff) return
 
     if (!grouped[category]) {
       grouped[category] = []
